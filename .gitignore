@@ -1,6 +1,5 @@
 .env
 .phpunit.cache/
-dist/
 vendor/
 storage/*.pdf
 storage/*.zip

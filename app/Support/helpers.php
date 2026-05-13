@@ -54,9 +54,7 @@ if (!function_exists('storage_path')) {
 if (!function_exists('public_path')) {
     function public_path(string $path = ''): string
     {
-        $publicPath = rtrim((string) config('app.public_path'), '/\\');
-
-        return $path === '' ? $publicPath : $publicPath . DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR);
+        return base_path('public' . ($path === '' ? '' : DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR)));
     }
 }
 

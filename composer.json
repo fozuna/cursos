@@ -26,9 +26,6 @@
         }
     },
     "scripts": {
-        "build:hostinger": [
-            "@php deploy/hostinger/build.php"
-        ],
         "post-install-cmd": [
             "@php -r \"if (!is_dir('storage/logs')) mkdir('storage/logs', 0777, true); if (!is_dir('public/storage/certificados')) mkdir('public/storage/certificados', 0777, true); if (!is_dir('public/uploads')) mkdir('public/uploads', 0777, true);\""
         ],
