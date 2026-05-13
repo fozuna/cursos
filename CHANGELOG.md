@@ -26,5 +26,7 @@ O formato adotado e inspirado em Keep a Changelog, com linguagem objetiva e orie
 
 ### Fixed
 
+- Correcao de regressao visual no layout administrativo causada por utilitarios do Tailwind CDN sem fallback local suficiente em telas criticas.
+- Ajuste de compatibilidade do menu lateral responsivo para navegadores com suporte legado a `matchMedia`.
 - Ajustes de schema e preparacao automatica de diretorios no bootstrap da aplicacao.
 - Correcao de geracao de certificados em duas paginas com QR Code e URL de validacao estabilizados.

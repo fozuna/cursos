@@ -8,6 +8,15 @@ Este projeto utiliza um padrao visual proprio em `public/assets/css/app.css`, ma
 - `section-stack`: empilhamento vertical padrao entre blocos da pagina.
 - `page-header`: cabecalho principal de pagina com titulo, descricao e acoes.
 - `admin-card`: base estrutural de qualquer bloco visual.
+- `admin-sidebar`: navegacao lateral fixa com suporte a desktop e mobile.
+- `mobile-topbar`: cabecalho compacto para abertura do menu em telas menores.
+
+## Regra de resiliencia visual
+
+- Qualquer utilitario visual essencial usado nas views administrativas deve ter fallback equivalente em `public/assets/css/app.css`.
+- Nao depender exclusivamente do CDN do Tailwind para grid, espacamento, cores de status, gradientes ou estados de navegacao.
+- Ao introduzir novas classes utilitarias em views PHP, revisar se a classe ja existe no CSS proprio ou adicionar fallback correspondente.
+- Em interacoes responsivas baseadas em JavaScript, sempre prever compatibilidade com navegadores que usam APIs legadas, como `MediaQueryList.addListener`.
 
 ## Cards padrao
 

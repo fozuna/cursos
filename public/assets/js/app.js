@@ -111,7 +111,11 @@ document.addEventListener('DOMContentLoaded', () => {
             sidebarOverlay.addEventListener('click', () => setSidebarState(false));
         }
 
-        desktopSidebarQuery.addEventListener('change', () => setSidebarState(false));
+        if (typeof desktopSidebarQuery.addEventListener === 'function') {
+            desktopSidebarQuery.addEventListener('change', () => setSidebarState(false));
+        } else if (typeof desktopSidebarQuery.addListener === 'function') {
+            desktopSidebarQuery.addListener(() => setSidebarState(false));
+        }
     }
 
     submenuToggles.forEach((toggle) => {
