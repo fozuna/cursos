@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const uploadFileInput = document.querySelector('[data-upload-file]');
     const uploadFileName = document.querySelector('[data-upload-file-name]');
     const previewInputs = document.querySelectorAll('[data-preview-input]');
+    const phoneInputs = document.querySelectorAll('[data-phone-mask]');
+    const cpfInputs = document.querySelectorAll('[data-cpf-mask]');
 
     const formatPreviewValue = (key, value) => {
         if (key === 'completion_date' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -91,5 +93,61 @@ document.addEventListener('DOMContentLoaded', () => {
         update();
         input.addEventListener('input', update);
         input.addEventListener('change', update);
+    });
+
+    const applyMask = (input, formatter) => {
+        input.addEventListener('input', () => {
+            const digits = input.value.replace(/\D+/g, '');
+            input.value = formatter(digits);
+        });
+    };
+
+    phoneInputs.forEach((input) => {
+        applyMask(input, (digits) => {
+            if (digits.length <= 10) {
+                return digits
+                    .replace(/^(\d{0,2})(\d{0,4})(\d{0,4}).*/, (_, ddd, part1, part2) => {
+                        let formatted = ddd ? `(${ddd}` : '';
+                        if (ddd.length === 2) {
+                            formatted += ') ';
+                        }
+                        formatted += part1;
+                        if (part2) {
+                            formatted += `-${part2}`;
+                        }
+                        return formatted;
+                    });
+            }
+
+            return digits
+                .replace(/^(\d{0,2})(\d{0,5})(\d{0,4}).*/, (_, ddd, part1, part2) => {
+                    let formatted = ddd ? `(${ddd}` : '';
+                    if (ddd.length === 2) {
+                        formatted += ') ';
+                    }
+                    formatted += part1;
+                    if (part2) {
+                        formatted += `-${part2}`;
+                    }
+                    return formatted;
+                });
+        });
+    });
+
+    cpfInputs.forEach((input) => {
+        applyMask(input, (digits) => digits
+            .replace(/^(\d{0,3})(\d{0,3})(\d{0,3})(\d{0,2}).*/, (_, p1, p2, p3, p4) => {
+                let formatted = p1;
+                if (p2) {
+                    formatted += `.${p2}`;
+                }
+                if (p3) {
+                    formatted += `.${p3}`;
+                }
+                if (p4) {
+                    formatted += `-${p4}`;
+                }
+                return formatted;
+            }));
     });
 });

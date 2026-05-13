@@ -64,12 +64,16 @@ final class CertificateGenerationService
                 $db = Database::connection();
                 $db->beginTransaction();
 
-                $studentId = $this->studentRepository->create([
-                    'company_id' => $companyId,
-                    'full_name' => $row['full_name'],
-                    'email' => $row['email'] ?? null,
-                    'document_number' => $row['document_number'] ?? null,
-                ]);
+                $studentId = isset($row['student_id']) && (int) $row['student_id'] > 0
+                    ? (int) $row['student_id']
+                    : $this->studentRepository->create([
+                        'company_id' => $companyId,
+                        'full_name' => $row['full_name'],
+                        'email' => $row['email'] ?? null,
+                        'phone' => $row['phone'] ?? null,
+                        'cpf' => $row['cpf'] ?? null,
+                        'document_number' => $row['document_number'] ?? null,
+                    ]);
 
                 $validationHash = hash(
                     'sha256',

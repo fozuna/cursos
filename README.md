@@ -40,6 +40,32 @@ Aponte o virtual host para `public/`.
 - Frente: dados principais, assinaturas, QR Code e validacao.
 - Verso: conteudo programatico do curso.
 
+## Modulos Educacionais
+
+- `Cursos`: cadastro completo com nome, carga horaria, periodo, instrutor, instituicao executora e cinco secoes de conteudo programatico.
+- `Alunos`: cadastro com nome obrigatorio e campos opcionais para e-mail, telefone e CPF, com validacoes de formato e duplicidade.
+- `Matriculas`: vinculo entre alunos e cursos com status `active`, `completed` e `cancelled`, datas de matricula e conclusao e bloqueio de duplicidade por aluno/curso.
+
+### Fluxo recomendado
+
+- Cadastre o curso no modulo `Cursos`.
+- Cadastre os participantes no modulo `Alunos`.
+- Crie as matriculas no modulo `Matriculas`, inclusive em lote para varios alunos.
+- Marque as matriculas concluidas.
+- Na tela inicial, selecione apenas o curso para gerar os certificados automaticamente com base nas matriculas concluidas.
+
+### Exportacoes
+
+- `Cursos`: exportacao CSV e PDF.
+- `Alunos`: exportacao CSV e PDF.
+- `Matriculas`: exportacao CSV e PDF, com filtros por curso, aluno, status e busca textual.
+
+### Integridade
+
+- Nao e possivel excluir cursos com matriculas ativas.
+- Nao e possivel excluir alunos com matriculas vinculadas.
+- Nao e possivel matricular o mesmo aluno duas vezes no mesmo curso.
+
 ### Cadastro Pelo Painel
 
 - Acesse o dashboard administrativo.
@@ -68,5 +94,7 @@ vendor\bin\phpunit
 Os testes cobrem:
 
 - validacao unitaria do conteudo programatico
+- validacao unitaria de cadastro de cursos
+- validacao unitaria de cadastro de alunos
 - renderizacao integrada da frente e do verso do certificado
 - cenarios com conteudo enxuto e conteudo detalhado

@@ -65,13 +65,13 @@ final class CertificateRepository extends AbstractRepository
         return (bool) $statement->fetchColumn();
     }
 
-    public function nextSequenceForYear(int $year): int
+    public function nextSequenceForYear(int $year, string $prefix = 'CERT'): int
     {
         $statement = $this->execute(
             'SELECT MAX(CAST(SUBSTRING_INDEX(certificate_code, "-", -1) AS UNSIGNED)) AS max_sequence
              FROM certificates
              WHERE certificate_code REGEXP :pattern',
-            ['pattern' => sprintf('^CERT-%d-[0-9]{4,}$', $year)]
+            ['pattern' => sprintf('^%s-%d-[0-9]{4,}$', preg_quote($prefix, '/'), $year)]
         );
 
         return (int) ($statement->fetchColumn() ?: 0) + 1;

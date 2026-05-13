@@ -100,6 +100,10 @@ final class ApplicationBootstrap
                 'generation_histories',
             ]),
             '002_add_program_content_to_certificates.sql' => self::columnExists($pdo, 'certificates', 'program_content'),
+            '003_add_education_management.sql' => self::tablesExist($pdo, ['courses', 'enrollments'])
+                && self::columnExists($pdo, 'students', 'phone')
+                && self::columnExists($pdo, 'students', 'cpf')
+                && self::columnExists($pdo, 'students', 'deleted_at'),
             default => false,
         };
     }

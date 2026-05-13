@@ -14,12 +14,12 @@ final class CertificateCodeService
     ) {
     }
 
-    public function nextAvailableCode(?int $year = null): string
+    public function nextAvailableCode(?int $year = null, string $prefix = 'CERT'): string
     {
         $year ??= (int) date('Y');
-        $sequence = $this->certificateRepository->nextSequenceForYear($year);
+        $sequence = $this->certificateRepository->nextSequenceForYear($year, $prefix);
 
-        return $this->format($year, $sequence);
+        return $this->format($prefix, $year, $sequence);
     }
 
     /**
@@ -34,14 +34,16 @@ final class CertificateCodeService
 
         foreach ($rows as $row) {
             $code = strtoupper(trim((string) ($row['certificate_code'] ?? '')));
+            $prefix = strtoupper(trim((string) ($row['certificate_prefix'] ?? 'CERT')));
 
             if ($code === '') {
                 $year = $this->detectYear((string) ($row['completion_date'] ?? ''));
-                $yearSequences[$year] ??= $this->certificateRepository->nextSequenceForYear($year);
+                $sequenceKey = $prefix . '-' . $year;
+                $yearSequences[$sequenceKey] ??= $this->certificateRepository->nextSequenceForYear($year, $prefix);
 
                 do {
-                    $generatedCode = $this->format($year, $yearSequences[$year]);
-                    $yearSequences[$year]++;
+                    $generatedCode = $this->format($prefix, $year, $yearSequences[$sequenceKey]);
+                    $yearSequences[$sequenceKey]++;
                 } while (isset($reservedCodes[$generatedCode]) || $this->certificateRepository->existsByCode($generatedCode));
 
                 $code = $generatedCode;
@@ -78,8 +80,8 @@ final class CertificateCodeService
         return (int) date('Y');
     }
 
-    private function format(int $year, int $sequence): string
+    private function format(string $prefix, int $year, int $sequence): string
     {
-        return sprintf('CERT-%d-%04d', $year, $sequence);
+        return sprintf('%s-%d-%04d', $prefix, $year, $sequence);
     }
 }

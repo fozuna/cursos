@@ -7,8 +7,11 @@ namespace App\Controllers;
 use App\Core\Request;
 use App\Core\Response;
 use App\Repositories\CompanyRepository;
+use App\Repositories\CourseRepository;
+use App\Repositories\EnrollmentRepository;
 use App\Services\CertificateCodeService;
 use App\Services\CertificateGenerationService;
+use App\Services\CourseCatalogService;
 use App\Services\ProgramContentService;
 use App\Services\StudentImportService;
 use App\Support\Logger;
@@ -21,8 +24,11 @@ final class CertificateController extends Controller
         private readonly StudentImportService $studentImportService = new StudentImportService(),
         private readonly CertificateCodeService $certificateCodeService = new CertificateCodeService(),
         private readonly ProgramContentService $programContentService = new ProgramContentService(),
+        private readonly CourseCatalogService $courseCatalogService = new CourseCatalogService(),
         private readonly CertificateGenerationService $certificateGenerationService = new CertificateGenerationService(),
-        private readonly CompanyRepository $companyRepository = new CompanyRepository()
+        private readonly CompanyRepository $companyRepository = new CompanyRepository(),
+        private readonly CourseRepository $courseRepository = new CourseRepository(),
+        private readonly EnrollmentRepository $enrollmentRepository = new EnrollmentRepository()
     ) {
     }
 
@@ -47,12 +53,16 @@ final class CertificateController extends Controller
                 'request_path' => $request->path(),
             ]);
 
-            $imported = $mode === 'upload'
-                ? $this->studentImportService->fromUpload($request->file('students_file') ?? [])
-                : $this->studentImportService->fromManual($request->all());
-            $preparedRows = $this->certificateCodeService->prepareRows($imported['rows']);
+            if ($mode === 'course') {
+                [$imported, $programContent] = $this->buildFromCourseSelection($request, (int) $company['id']);
+            } else {
+                $imported = $mode === 'upload'
+                    ? $this->studentImportService->fromUpload($request->file('students_file') ?? [])
+                    : $this->studentImportService->fromManual($request->all());
+                $programContent = $this->programContentService->buildFromPayload($request->all());
+            }
 
-            $programContent = $this->programContentService->buildFromPayload($request->all());
+            $preparedRows = $this->certificateCodeService->prepareRows($imported['rows']);
 
             $result = $this->certificateGenerationService->generate(
                 $preparedRows,
@@ -121,5 +131,50 @@ final class CertificateController extends Controller
         $path = public_path('storage/certificados/' . $file);
 
         Response::download($path, $file);
+    }
+
+    /**
+     * @return array{0: array<string, mixed>, 1: array<string, mixed>}
+     */
+    private function buildFromCourseSelection(Request $request, int $companyId): array
+    {
+        $courseId = (int) $request->input('course_id', 0);
+        $course = $this->courseRepository->findActive($courseId);
+
+        if ($course === null || (int) $course['company_id'] !== $companyId) {
+            throw new InvalidArgumentException('Selecione um curso valido para gerar certificados.');
+        }
+
+        $enrollments = $this->enrollmentRepository->completedByCourse($courseId);
+
+        if ($enrollments === []) {
+            throw new InvalidArgumentException('Nao existem matriculas concluidas para o curso selecionado.');
+        }
+
+        $rows = array_map(static function (array $enrollment) use ($course): array {
+            return [
+                'student_id' => (int) $enrollment['student_id'],
+                'full_name' => (string) $enrollment['full_name'],
+                'email' => $enrollment['email'] ?? null,
+                'phone' => $enrollment['phone'] ?? null,
+                'cpf' => $enrollment['cpf'] ?? null,
+                'document_number' => $enrollment['cpf'] ?? null,
+                'course_name' => (string) $course['name'],
+                'workload_hours' => (int) $course['workload_hours'],
+                'completion_date' => substr((string) ($enrollment['completed_at'] ?: $course['end_date']), 0, 10),
+                'certificate_code' => '',
+                'certificate_prefix' => (string) ($course['certificate_prefix'] ?? 'CERT'),
+                'instructor_name' => (string) $course['instructor_name'],
+                'institution_name' => (string) $course['institution_name'],
+            ];
+        }, $enrollments);
+
+        return [[
+            'source_file' => null,
+            'original_name' => null,
+            'source_type' => 'course',
+            'row_count' => count($rows),
+            'rows' => $rows,
+        ], $this->courseCatalogService->buildProgramContentFromCourse($course)];
     }
 }

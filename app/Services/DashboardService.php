@@ -7,7 +7,10 @@ namespace App\Services;
 use App\Repositories\BatchRepository;
 use App\Repositories\CertificateRepository;
 use App\Repositories\CompanyRepository;
+use App\Repositories\CourseRepository;
+use App\Repositories\EnrollmentRepository;
 use App\Repositories\HistoryRepository;
+use App\Repositories\StudentRepository;
 use App\Repositories\TemplateRepository;
 
 final class DashboardService
@@ -19,7 +22,10 @@ final class DashboardService
         private readonly CertificateCodeService $certificateCodeService = new CertificateCodeService(),
         private readonly BatchRepository $batchRepository = new BatchRepository(),
         private readonly HistoryRepository $historyRepository = new HistoryRepository(),
-        private readonly ProgramContentService $programContentService = new ProgramContentService()
+        private readonly ProgramContentService $programContentService = new ProgramContentService(),
+        private readonly CourseRepository $courseRepository = new CourseRepository(),
+        private readonly StudentRepository $studentRepository = new StudentRepository(),
+        private readonly EnrollmentRepository $enrollmentRepository = new EnrollmentRepository()
     ) {
     }
 
@@ -41,6 +47,11 @@ final class DashboardService
             'history' => $this->historyRepository->latestByCompany((int) $company['id']),
             'programSectionLabels' => $this->programContentService->labels(),
             'programSectionDefaults' => $this->programContentService->defaultSections(),
+            'courseCount' => $this->courseRepository->countByCompany((int) $company['id']),
+            'studentCount' => $this->studentRepository->countByCompany((int) $company['id']),
+            'enrollmentCount' => $this->enrollmentRepository->countByCompany((int) $company['id']),
+            'activeCourses' => $this->courseRepository->allActiveByCompany((int) $company['id']),
+            'recentEnrollments' => $this->enrollmentRepository->paginateByCompany((int) $company['id'], [], 1, 6)['items'],
         ];
     }
 }
