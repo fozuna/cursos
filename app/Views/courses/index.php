@@ -8,27 +8,38 @@ $programValues = [
     'program_methodology' => (string) ($courseForm['program_methodology'] ?? $programSectionDefaults['methodology']),
     'program_evaluation' => (string) ($courseForm['program_evaluation'] ?? $programSectionDefaults['evaluation']),
 ];
+$pageHeaderEyebrow = 'Cursos';
+$pageHeaderTitle = 'Cadastro e operacao de cursos';
+$pageHeaderSubtitle = 'Gerencie catalogo, conteudo programatico e disponibilidade para matriculas e emissao automatica de certificados.';
+$pageHeaderActions = $editingCourse
+    ? '<a href="' . e(url('/cursos')) . '" class="action-button">Novo cadastro</a>'
+    : '<a href="' . e(url('/cursos/exportar/pdf')) . '" class="action-button">Resumo PDF</a>';
 require base_path('app/Views/partials/admin_nav.php');
 ?>
 
-<main class="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+<main class="admin-shell">
     <?php require base_path('app/Views/partials/flash.php'); ?>
+    <?php require base_path('app/Views/partials/page_header.php'); ?>
 
-    <section class="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <div class="flex items-start justify-between gap-4">
+    <section class="section-stack">
+        <section class="admin-card form-card">
+            <div class="card-header">
                 <div>
-                    <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Cadastro</p>
-                    <h2 class="mt-2 text-2xl font-semibold"><?= $editingCourse ? 'Editar curso' : 'Novo curso' ?></h2>
+                    <p class="card-kicker">Card de cadastro</p>
+                    <h2 class="card-title"><?= $editingCourse ? 'Editar curso' : 'Novo curso' ?></h2>
+                    <p class="card-subtitle">Organize os dados essenciais para certificados, cronograma e conteudo programatico em um unico fluxo.</p>
                 </div>
-                <?php if ($editingCourse): ?>
-                    <a href="<?= e(url('/cursos')) ?>" class="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700">Novo cadastro</a>
-                <?php endif; ?>
+                <div class="page-actions">
+                    <?php if ($editingCourse): ?>
+                        <a href="<?= e(url('/cursos')) ?>" class="action-button">Cancelar edicao</a>
+                    <?php endif; ?>
+                    <a href="<?= e(url('/cursos/exportar/csv')) ?>" class="action-button">Exportar CSV</a>
+                </div>
             </div>
 
             <form method="POST" action="<?= e(url('/cursos/salvar')) ?>" class="mt-6 space-y-4">
                 <input type="hidden" name="course_id" value="<?= (int) ($courseForm['id'] ?? 0) ?>">
-                <div class="grid gap-4 md:grid-cols-2">
+                <div class="form-grid form-grid--3">
                     <label class="field-card">
                         <span>Nome do curso</span>
                         <input type="text" name="name" value="<?= e((string) ($courseForm['name'] ?? '')) ?>" class="field-input" required>
@@ -63,7 +74,7 @@ require base_path('app/Views/partials/admin_nav.php');
                     </label>
                 </div>
 
-                <div class="grid gap-4">
+                <div class="form-grid">
                     <label class="field-card">
                         <span><?= e($programSectionLabels['syllabus']) ?></span>
                         <textarea name="program_syllabus" rows="3" class="field-input min-h-28" required><?= e($programValues['program_syllabus']) ?></textarea>
@@ -76,7 +87,7 @@ require base_path('app/Views/partials/admin_nav.php');
                         <span><?= e($programSectionLabels['modules']) ?></span>
                         <textarea name="program_modules" rows="5" class="field-input min-h-32" required><?= e($programValues['program_modules']) ?></textarea>
                     </label>
-                    <div class="grid gap-4 md:grid-cols-2">
+                    <div class="form-grid form-grid--2">
                         <label class="field-card">
                             <span><?= e($programSectionLabels['methodology']) ?></span>
                             <textarea name="program_methodology" rows="4" class="field-input min-h-28" required><?= e($programValues['program_methodology']) ?></textarea>
@@ -88,60 +99,87 @@ require base_path('app/Views/partials/admin_nav.php');
                     </div>
                 </div>
 
-                <button type="submit" class="inline-flex rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white dark:bg-white dark:text-slate-950">
+                <button type="submit" class="action-button action-button--primary">
                     <?= $editingCourse ? 'Salvar alteracoes' : 'Cadastrar curso' ?>
                 </button>
             </form>
-        </div>
+        </section>
 
-        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <section class="admin-card filter-card">
+            <div class="card-header card-header--tight">
                 <div>
-                    <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Catalogo</p>
-                    <h2 class="mt-2 text-2xl font-semibold">Cursos cadastrados</h2>
+                    <p class="card-kicker">Filtros e pesquisa</p>
+                    <h2 class="card-title">Refinar catalogo</h2>
+                    <p class="card-subtitle">Pesquise cursos por nome, instrutor ou instituicao e acione exportacoes do resultado atual.</p>
                 </div>
-                <form method="GET" action="<?= e(url('/cursos')) ?>" class="flex flex-col gap-3 sm:flex-row">
-                    <input type="text" name="search" value="<?= e($search) ?>" placeholder="Buscar curso, instrutor ou instituicao" class="field-input min-w-[280px]">
-                    <button type="submit" class="rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold dark:border-slate-700">Buscar</button>
-                </form>
             </div>
+            <form method="GET" action="<?= e(url('/cursos')) ?>" class="form-grid form-grid--3">
+                <label class="field-card" style="grid-column: span 2;">
+                    <span>Busca principal</span>
+                    <input type="text" name="search" value="<?= e($search) ?>" placeholder="Buscar curso, instrutor ou instituicao" class="field-input">
+                </label>
+                <div class="page-actions">
+                    <button type="submit" class="action-button action-button--primary">Buscar cursos</button>
+                    <a href="<?= e(url('/cursos')) ?>" class="action-button">Limpar</a>
+                </div>
+            </form>
 
             <div class="mt-4 flex flex-wrap gap-3">
-                <a href="<?= e(url('/cursos/exportar/csv' . ($search !== '' ? '?search=' . urlencode($search) : ''))) ?>" class="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700">Exportar CSV</a>
-                <a href="<?= e(url('/cursos/exportar/pdf' . ($search !== '' ? '?search=' . urlencode($search) : ''))) ?>" class="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700">Exportar PDF</a>
+                <a href="<?= e(url('/cursos/exportar/csv' . ($search !== '' ? '?search=' . urlencode($search) : ''))) ?>" class="action-button">Exportar CSV</a>
+                <a href="<?= e(url('/cursos/exportar/pdf' . ($search !== '' ? '?search=' . urlencode($search) : ''))) ?>" class="action-button">Exportar PDF</a>
             </div>
+        </section>
 
-            <div class="mt-6 space-y-4">
-                <?php foreach ($courses['items'] as $course): ?>
-                    <article class="rounded-3xl border border-slate-200 p-5 dark:border-slate-700">
-                        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                            <div>
-                                <h3 class="text-lg font-semibold"><?= e($course['name']) ?></h3>
-                                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400"><?= e($course['instructor_name']) ?> | <?= e($course['institution_name']) ?></p>
-                                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400"><?= e(format_date_br((string) $course['start_date'])) ?> a <?= e(format_date_br((string) $course['end_date'])) ?> | <?= (int) $course['workload_hours'] ?>h</p>
-                            </div>
-                            <div class="flex flex-wrap gap-2">
-                                <span class="rounded-full px-3 py-2 text-xs <?= (int) $course['is_active'] === 1 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' ?>">
-                                    <?= (int) $course['is_active'] === 1 ? 'Ativo' : 'Inativo' ?>
-                                </span>
-                                <a href="<?= e(url('/cursos?edit=' . (int) $course['id'])) ?>" class="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700">Editar</a>
-                                <form method="POST" action="<?= e(url('/cursos/excluir/' . (int) $course['id'])) ?>" onsubmit="return confirm('Deseja remover este curso?');">
-                                    <button type="submit" class="rounded-full border border-rose-200 px-4 py-2 text-sm font-medium text-rose-700 dark:border-rose-900/60 dark:text-rose-300">Excluir</button>
-                                </form>
-                            </div>
-                        </div>
-                        <div class="mt-4 grid gap-3 md:grid-cols-2">
-                            <div class="rounded-2xl bg-slate-50 p-4 text-sm dark:bg-slate-950/50">
-                                <p class="font-semibold">Matriculas ativas</p>
-                                <p class="mt-1 text-slate-500 dark:text-slate-400"><?= (int) ($course['active_enrollments'] ?? 0) ?></p>
-                            </div>
-                            <div class="rounded-2xl bg-slate-50 p-4 text-sm dark:bg-slate-950/50">
-                                <p class="font-semibold">Matriculas concluidas</p>
-                                <p class="mt-1 text-slate-500 dark:text-slate-400"><?= (int) ($course['completed_enrollments'] ?? 0) ?></p>
-                            </div>
-                        </div>
-                    </article>
-                <?php endforeach; ?>
+        <section class="admin-card table-card">
+            <div class="card-header">
+                <div>
+                    <p class="card-kicker">Listagem</p>
+                    <h2 class="card-title">Cursos cadastrados</h2>
+                    <p class="card-subtitle">Acompanhe disponibilidade, periodo e volume operacional de cada curso.</p>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Curso</th>
+                            <th>Periodo</th>
+                            <th>Instrutor</th>
+                            <th>Status</th>
+                            <th>Matriculas</th>
+                            <th>Acoes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($courses['items'] as $course): ?>
+                            <tr>
+                                <td>
+                                    <div class="data-table__title"><?= e($course['name']) ?></div>
+                                    <div class="data-table__meta"><?= e($course['institution_name']) ?> | <?= (int) $course['workload_hours'] ?>h</div>
+                                </td>
+                                <td><?= e(format_date_br((string) $course['start_date'])) ?><br><span class="data-table__meta"><?= e(format_date_br((string) $course['end_date'])) ?></span></td>
+                                <td><?= e($course['instructor_name']) ?></td>
+                                <td>
+                                    <span class="badge <?= (int) $course['is_active'] === 1 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' ?>">
+                                        <?= (int) $course['is_active'] === 1 ? 'Ativo' : 'Inativo' ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="data-table__title"><?= (int) ($course['active_enrollments'] ?? 0) ?> ativas</div>
+                                    <div class="data-table__meta"><?= (int) ($course['completed_enrollments'] ?? 0) ?> concluidas</div>
+                                </td>
+                                <td>
+                                    <div class="page-actions">
+                                        <a href="<?= e(url('/cursos?edit=' . (int) $course['id'])) ?>" class="action-button">Editar</a>
+                                        <form method="POST" action="<?= e(url('/cursos/excluir/' . (int) $course['id'])) ?>" onsubmit="return confirm('Deseja remover este curso?');">
+                                            <button type="submit" class="action-button">Excluir</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
             </div>
 
             <?php
@@ -150,6 +188,24 @@ require base_path('app/Views/partials/admin_nav.php');
             $query = ['search' => $search];
             require base_path('app/Views/partials/pagination.php');
             ?>
-        </div>
+        </section>
+
+        <section class="summary-grid">
+            <article class="summary-card">
+                <p class="card-kicker">Resumo</p>
+                <h3 class="card-title">Base ativa</h3>
+                <p class="card-subtitle"><?= count($courses['items']) ?> cursos exibidos na consulta atual.</p>
+            </article>
+            <article class="summary-card">
+                <p class="card-kicker">Operacao</p>
+                <h3 class="card-title">Emissao automatica</h3>
+                <p class="card-subtitle">Cursos ativos ficam imediatamente disponiveis para gerar certificados a partir das matriculas concluidas.</p>
+            </article>
+            <article class="summary-card">
+                <p class="card-kicker">Padrao</p>
+                <h3 class="card-title">Conteudo programatico</h3>
+                <p class="card-subtitle">As cinco secoes do curso alimentam automaticamente o verso do certificado, sem redigitacao manual.</p>
+            </article>
+        </section>
     </section>
 </main>

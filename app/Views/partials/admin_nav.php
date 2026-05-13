@@ -7,16 +7,16 @@ $navItems = [
     'enrollments' => ['label' => 'Matriculas', 'href' => url('/matriculas')],
 ];
 ?>
-<header class="rounded-[2rem] border border-slate-200 bg-white/95 px-6 py-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/95">
+<header class="page-header">
     <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
         <div>
-            <p class="text-xs uppercase tracking-[0.35em] text-slate-400">TRAXTER Educacional</p>
-            <h1 class="mt-2 text-2xl font-semibold text-slate-950 dark:text-white"><?= e($company['name'] ?? config('app.name')) ?></h1>
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Cursos, alunos, matriculas e emissao automatica de certificados em um fluxo unico.</p>
+            <p class="page-header__eyebrow">TRAXTER Educacional</p>
+            <h1 class="page-header__title"><?= e($company['name'] ?? config('app.name')) ?></h1>
+            <p class="page-header__subtitle">Cursos, alunos, matriculas e emissao automatica de certificados em um fluxo unico.</p>
         </div>
-        <nav class="flex flex-wrap gap-2">
+        <nav class="page-actions">
             <?php foreach ($navItems as $key => $item): ?>
-                <a href="<?= e($item['href']) ?>" class="rounded-full px-4 py-2 text-sm font-medium transition <?= $activeNav === $key ? 'bg-slate-950 text-white dark:bg-white dark:text-slate-950' : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800' ?>">
+                <a href="<?= e($item['href']) ?>" class="action-button <?= $activeNav === $key ? 'action-button--primary' : '' ?>">
                     <?= e($item['label']) ?>
                 </a>
             <?php endforeach; ?>
