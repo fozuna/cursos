@@ -1,0 +1,30 @@
+# Changelog
+
+Todas as mudancas relevantes do projeto devem ser registradas neste arquivo.
+
+O formato adotado e inspirado em Keep a Changelog, com linguagem objetiva e orientada a entrega.
+
+## [Unreleased]
+
+### Added
+
+- Politica formal de versionamento com commit e push obrigatorios apos cada conjunto de alteracoes concluido.
+- Fluxo padronizado para mudancas de schema com criacao de migration, teste local, verificacao de rollback e atualizacao de documentacao.
+- Documento operacional em `docs/versionamento-e-migrations.md`.
+
+### Changed
+
+- README atualizado com regras de versionamento, changelog e rotina obrigatoria para migrations.
+
+## [2026-05-13]
+
+### Added
+
+- Modulos de cursos, alunos e matriculas integrados ao fluxo de certificados.
+- Exportacoes CSV e PDF para os modulos administrativos.
+- Design system administrativo com padrao vertical de layout e componentes reutilizaveis.
+
+### Fixed
+
+- Ajustes de schema e preparacao automatica de diretorios no bootstrap da aplicacao.
+- Correcao de geracao de certificados em duas paginas com QR Code e URL de validacao estabilizados.

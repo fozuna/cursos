@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewInputs = document.querySelectorAll('[data-preview-input]');
     const phoneInputs = document.querySelectorAll('[data-phone-mask]');
     const cpfInputs = document.querySelectorAll('[data-cpf-mask]');
+    const modalTriggers = document.querySelectorAll('[data-modal-open]');
+    const modals = document.querySelectorAll('[data-modal]');
 
     const formatPreviewValue = (key, value) => {
         if (key === 'completion_date' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -25,6 +27,30 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('certificate-theme', theme);
     };
 
+    const openModal = (modal) => {
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        const focusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (focusable) {
+            focusable.focus();
+        }
+    };
+
+    const closeModal = (modal) => {
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    };
+
     if (themeToggle) {
         const storedTheme = localStorage.getItem('certificate-theme') || 'light';
         applyTheme(storedTheme);
@@ -33,6 +59,27 @@ document.addEventListener('DOMContentLoaded', () => {
             applyTheme(html.classList.contains('dark') ? 'light' : 'dark');
         });
     }
+
+    modalTriggers.forEach((trigger) => {
+        trigger.addEventListener('click', () => {
+            const modal = document.querySelector(`[data-modal-id="${trigger.dataset.modalOpen}"]`);
+            openModal(modal);
+        });
+    });
+
+    modals.forEach((modal) => {
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal || event.target.matches('[data-modal-close]')) {
+                closeModal(modal);
+            }
+        });
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            modals.forEach((modal) => closeModal(modal));
+        }
+    });
 
     const syncMode = () => {
         const uploadMode = inputMode && inputMode.value === 'upload';

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
     <title><?= e(config('app.name')) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -29,7 +30,10 @@
     <link rel="stylesheet" href="<?= e(asset('assets/css/app.css')) ?>">
 </head>
 <body class="min-h-full bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-    <?= $content ?>
+    <a href="#main-content" class="skip-link">Pular para o conteudo principal</a>
+    <div id="main-content">
+        <?= $content ?>
+    </div>
     <script src="<?= e(asset('assets/js/app.js')) ?>" defer></script>
 </body>
 </html>

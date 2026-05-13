@@ -21,6 +21,9 @@ Aplicacao PHP 8.2+ para importacao de alunos, geracao automatica de certificados
 - `app/Services`: regras de negocio
 - `app/Views`: dashboard, preview, validacao e template PDF
 - `database/migrations`: schema MariaDB
+- `docs/ui-components.md`: guia do sistema visual e componentes reutilizaveis
+- `docs/versionamento-e-migrations.md`: politica operacional de versionamento e mudancas de schema
+- `CHANGELOG.md`: historico resumido de alteracoes relevantes
 - `public/storage/certificados`: PDFs e ZIPs gerados
 - `public/uploads`: planilhas enviadas
 
@@ -33,6 +36,26 @@ php database/migrate.php
 ```
 
 Aponte o virtual host para `public/`.
+
+## Versionamento Obrigatorio
+
+- Toda entrega concluida deve terminar com `commit` e `push` imediato para o repositório remoto.
+- Nao acumular alteracoes prontas sem versionamento.
+- Mensagens de commit devem ser claras e objetivas.
+
+## Regra Para Migrations
+
+Sempre que houver mudanca de schema ou alteracao estrutural de dados:
+
+- criar nova migration em `database/migrations`;
+- testar a migration em desenvolvimento;
+- revisar o procedimento de rollback manual quando aplicavel;
+- atualizar `CHANGELOG.md`;
+- somente depois disso fazer `commit` e `push`.
+
+Guia operacional completo:
+
+- `docs/versionamento-e-migrations.md`
 
 ## Emissao Com Conteudo Programatico
 
@@ -65,6 +88,16 @@ Aponte o virtual host para `public/`.
 - Nao e possivel excluir cursos com matriculas ativas.
 - Nao e possivel excluir alunos com matriculas vinculadas.
 - Nao e possivel matricular o mesmo aluno duas vezes no mesmo curso.
+
+## Sistema Visual
+
+- O layout administrativo segue um padrao vertical com:
+- `page-header`
+- `form-card`
+- `filter-card`
+- `table-card`
+- `summary-card`
+- O guia de uso dos componentes esta em `docs/ui-components.md`.
 
 ### Cadastro Pelo Painel
 

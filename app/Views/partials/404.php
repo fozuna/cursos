@@ -1,11 +1,11 @@
-<div class="flex min-h-screen items-center justify-center px-6">
-    <div class="w-full max-w-xl rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-soft dark:border-slate-800 dark:bg-slate-900">
-        <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-700">404</p>
-        <h1 class="mt-4 text-3xl font-semibold">Rota nao encontrada</h1>
-        <p class="mt-3 text-slate-600 dark:text-slate-300">
+<div class="status-shell">
+    <div class="status-card text-center">
+        <p class="page-header__eyebrow">404</p>
+        <h1 class="page-header__title">Rota nao encontrada</h1>
+        <p class="page-header__subtitle" style="margin: 0.75rem auto 0;">
             O caminho <?= e($path ?? '/') ?> nao esta disponivel nesta aplicacao.
         </p>
-        <a href="<?= e(url('/')) ?>" class="mt-8 inline-flex rounded-full bg-brand-700 px-5 py-3 text-sm font-semibold text-white">
+        <a href="<?= e(url('/')) ?>" class="action-button action-button--primary mt-8">
             Voltar ao dashboard
         </a>
     </div>

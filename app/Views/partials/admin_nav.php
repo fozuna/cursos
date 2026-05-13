@@ -14,7 +14,7 @@ $navItems = [
             <h1 class="page-header__title"><?= e($company['name'] ?? config('app.name')) ?></h1>
             <p class="page-header__subtitle">Cursos, alunos, matriculas e emissao automatica de certificados em um fluxo unico.</p>
         </div>
-        <nav class="page-actions">
+        <nav class="page-actions" aria-label="Navegacao principal administrativa">
             <?php foreach ($navItems as $key => $item): ?>
                 <a href="<?= e($item['href']) ?>" class="action-button <?= $activeNav === $key ? 'action-button--primary' : '' ?>">
                     <?= e($item['label']) ?>
