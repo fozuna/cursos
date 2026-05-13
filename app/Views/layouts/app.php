@@ -30,10 +30,40 @@
     <link rel="stylesheet" href="<?= e(asset('assets/css/app.css')) ?>">
 </head>
 <body class="min-h-full bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <?php $useAdminLayout = $useAdminLayout ?? false; ?>
     <a href="#main-content" class="skip-link">Pular para o conteudo principal</a>
-    <div id="main-content">
-        <?= $content ?>
-    </div>
+    <?php if ($useAdminLayout): ?>
+        <div class="app-layout" data-admin-layout>
+            <?php require base_path('app/Views/partials/admin_sidebar.php'); ?>
+            <div class="app-layout__main">
+                <header class="mobile-topbar" aria-label="Cabecalho mobile">
+                    <button
+                        type="button"
+                        class="mobile-topbar__toggle"
+                        data-sidebar-toggle
+                        aria-controls="admin-sidebar"
+                        aria-expanded="false"
+                        aria-label="Abrir menu lateral"
+                    >
+                        <span class="mobile-topbar__toggle-line" aria-hidden="true"></span>
+                        <span class="mobile-topbar__toggle-line" aria-hidden="true"></span>
+                        <span class="mobile-topbar__toggle-line" aria-hidden="true"></span>
+                    </button>
+                    <a href="<?= e(url('/')) ?>" class="mobile-topbar__brand" aria-label="Ir para o dashboard principal">
+                        <span class="mobile-topbar__brand-mark" aria-hidden="true">CP</span>
+                        <span><?= e(config('app.name')) ?></span>
+                    </a>
+                </header>
+                <div id="main-content" class="app-layout__content">
+                    <?= $content ?>
+                </div>
+            </div>
+        </div>
+    <?php else: ?>
+        <div id="main-content">
+            <?= $content ?>
+        </div>
+    <?php endif; ?>
     <script src="<?= e(asset('assets/js/app.js')) ?>" defer></script>
 </body>
 </html>

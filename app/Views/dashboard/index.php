@@ -1,13 +1,13 @@
 <?php
 $zipFile = $flash['zip_file'] ?? null;
 $flashDetails = $flash['details'] ?? null;
+$useAdminLayout = true;
 $activeNav = 'dashboard';
 $pageHeaderEyebrow = 'Operacao educacional';
 $pageHeaderTitle = 'Painel executivo de cursos, alunos, matriculas e certificados';
 $pageHeaderSubtitle = 'Visualize a operacao, dispare a emissao automatica por curso e acompanhe o historico recente em uma interface mais fluida e corporativa.';
 $pageHeaderActions = '<a href="' . e(url('/cursos')) . '" class="action-button">Gerenciar cursos</a>'
     . '<a href="' . e(url('/matriculas')) . '" class="action-button">Ir para matriculas</a>';
-require base_path('app/Views/partials/admin_nav.php');
 ?>
 
 <main class="admin-shell">

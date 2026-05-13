@@ -1,4 +1,5 @@
 <?php
+$useAdminLayout = true;
 $activeNav = $activeNav ?? 'courses';
 $courseForm = $editingCourse ?? [];
 $programValues = [
@@ -14,7 +15,6 @@ $pageHeaderSubtitle = 'Gerencie catalogo, conteudo programatico e disponibilidad
 $pageHeaderActions = $editingCourse
     ? '<a href="' . e(url('/cursos')) . '" class="action-button">Novo cadastro</a>'
     : '<a href="' . e(url('/cursos/exportar/pdf')) . '" class="action-button">Resumo PDF</a>';
-require base_path('app/Views/partials/admin_nav.php');
 ?>
 
 <main class="admin-shell">

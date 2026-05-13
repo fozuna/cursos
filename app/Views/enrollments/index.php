@@ -1,10 +1,10 @@
 <?php
+$useAdminLayout = true;
 $activeNav = $activeNav ?? 'enrollments';
 $pageHeaderEyebrow = 'Matriculas';
 $pageHeaderTitle = 'Operacao de matriculas e conclusoes';
 $pageHeaderSubtitle = 'Centralize vinculacao entre alunos e cursos, acompanhe status e habilite a emissao automatica de certificados por conclusao.';
 $pageHeaderActions = '<a href="' . e(url('/matriculas/exportar/csv')) . '" class="action-button">Exportar base</a>';
-require base_path('app/Views/partials/admin_nav.php');
 ?>
 
 <main class="admin-shell">

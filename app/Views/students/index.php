@@ -1,4 +1,5 @@
 <?php
+$useAdminLayout = true;
 $activeNav = $activeNav ?? 'students';
 $studentForm = $editingStudent ?? [];
 $pageHeaderEyebrow = 'Alunos';
@@ -7,7 +8,6 @@ $pageHeaderSubtitle = 'Mantenha uma base consistente, validada e pronta para mat
 $pageHeaderActions = $editingStudent
     ? '<a href="' . e(url('/alunos')) . '" class="action-button">Novo cadastro</a>'
     : '<a href="' . e(url('/alunos/exportar/csv')) . '" class="action-button">Exportar base</a>';
-require base_path('app/Views/partials/admin_nav.php');
 ?>
 
 <main class="admin-shell">

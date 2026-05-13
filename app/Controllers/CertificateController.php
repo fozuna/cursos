@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Core\Request;
 use App\Core\Response;
+use App\Repositories\CertificateRepository;
 use App\Repositories\CompanyRepository;
 use App\Repositories\CourseRepository;
 use App\Repositories\EnrollmentRepository;
@@ -26,10 +27,38 @@ final class CertificateController extends Controller
         private readonly ProgramContentService $programContentService = new ProgramContentService(),
         private readonly CourseCatalogService $courseCatalogService = new CourseCatalogService(),
         private readonly CertificateGenerationService $certificateGenerationService = new CertificateGenerationService(),
+        private readonly CertificateRepository $certificateRepository = new CertificateRepository(),
         private readonly CompanyRepository $companyRepository = new CompanyRepository(),
         private readonly CourseRepository $courseRepository = new CourseRepository(),
         private readonly EnrollmentRepository $enrollmentRepository = new EnrollmentRepository()
     ) {
+    }
+
+    public function index(Request $request, array $params = []): never
+    {
+        unset($params);
+
+        $company = $this->companyRepository->findDefault();
+
+        if ($company === null) {
+            throw new InvalidArgumentException('Empresa padrao nao encontrada.');
+        }
+
+        $flash = $_SESSION['flash'] ?? null;
+        unset($_SESSION['flash']);
+
+        $section = (string) $request->input('secao', 'gerar');
+        $activeSubNav = $section === 'lista' ? 'list' : 'generate';
+
+        $this->view('certificates.index', [
+            'company' => $company,
+            'flash' => $flash,
+            'stats' => $this->certificateRepository->statsByCompany((int) $company['id']),
+            'activeCourses' => $this->courseRepository->allActiveByCompany((int) $company['id']),
+            'latestCertificates' => $this->certificateRepository->latestByCompany((int) $company['id'], 24),
+            'nextCertificateCode' => $this->certificateCodeService->nextAvailableCode(),
+            'activeSubNav' => $activeSubNav,
+        ]);
     }
 
     public function generate(Request $request, array $params = []): never
@@ -120,7 +149,7 @@ final class CertificateController extends Controller
             ]);
         }
 
-        redirect('/');
+        redirect((string) $request->input('redirect_to', '/'));
     }
 
     public function download(Request $request, array $params = []): never

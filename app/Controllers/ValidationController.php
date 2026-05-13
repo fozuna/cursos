@@ -14,6 +14,23 @@ final class ValidationController extends Controller
     ) {
     }
 
+    public function index(Request $request, array $params = []): never
+    {
+        unset($params);
+
+        $hash = trim((string) $request->input('hash', ''));
+        $certificate = $hash !== '' ? $this->certificateValidationService->validateHash($hash) : null;
+
+        $this->view('validation.index', [
+            'useAdminLayout' => true,
+            'activeNav' => 'certificates',
+            'activeSubNav' => 'validate',
+            'hash' => $hash,
+            'certificate' => $certificate,
+            'searched' => $hash !== '',
+        ]);
+    }
+
     public function show(Request $request, array $params = []): never
     {
         unset($request);

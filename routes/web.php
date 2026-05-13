@@ -6,6 +6,7 @@ use App\Controllers\CertificateController;
 use App\Controllers\CourseController;
 use App\Controllers\DashboardController;
 use App\Controllers\EnrollmentController;
+use App\Controllers\SettingsController;
 use App\Controllers\StudentController;
 use App\Controllers\ValidationController;
 use App\Core\Router;
@@ -31,6 +32,9 @@ $router->post('/matriculas/status/{id}', [EnrollmentController::class, 'updateSt
 $router->get('/matriculas/exportar/csv', [EnrollmentController::class, 'exportCsv']);
 $router->get('/matriculas/exportar/pdf', [EnrollmentController::class, 'exportPdf']);
 
+$router->get('/certificados', [CertificateController::class, 'index']);
 $router->post('/certificados/gerar', [CertificateController::class, 'generate']);
 $router->get('/download/{file}', [CertificateController::class, 'download']);
+$router->get('/validar', [ValidationController::class, 'index']);
 $router->get('/validar/{hash}', [ValidationController::class, 'show']);
+$router->get('/configuracoes', [SettingsController::class, 'index']);
