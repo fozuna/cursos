@@ -1,0 +1,50 @@
+name: Deploy Hostinger
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+          tools: composer:v2
+
+      - name: Validate required secrets
+        run: |
+          test -n "${{ secrets.HOSTINGER_ENV_FILE }}"
+          test -n "${{ secrets.HOSTINGER_FTP_SERVER }}"
+          test -n "${{ secrets.HOSTINGER_FTP_USERNAME }}"
+          test -n "${{ secrets.HOSTINGER_FTP_PASSWORD }}"
+          test -n "${{ secrets.HOSTINGER_DEPLOY_PATH }}"
+
+      - name: Create production .env
+        run: printf "%s" "${{ secrets.HOSTINGER_ENV_FILE }}" > .env
+
+      - name: Install production dependencies
+        run: composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+
+      - name: Build Hostinger package
+        run: php deploy/hostinger/build.php
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.HOSTINGER_FTP_SERVER }}
+          username: ${{ secrets.HOSTINGER_FTP_USERNAME }}
+          password: ${{ secrets.HOSTINGER_FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./dist/hostinger/cursos.traxter.com.br/
+          server-dir: ${{ secrets.HOSTINGER_DEPLOY_PATH }}
+          dangerous-clean-slate: false
