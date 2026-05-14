@@ -467,9 +467,11 @@ body.app-nav-open .admin-sidebar {
 .text-slate-300 { color: #cbd5e1; }
 .text-emerald-700 { color: #047857; }
 .text-emerald-900 { color: #064e3b; }
+.text-emerald-100 { color: #d1fae5; }
 .text-amber-700 { color: #b45309; }
 .text-rose-700 { color: #b91c1c; }
 .text-rose-900 { color: #7f1d1d; }
+.text-rose-100 { color: #ffe4e6; }
 .text-brand-700 { color: #1d4ed8; }
 .text-brand-100 { color: #dbeafe; }
 .text-sm { font-size: 0.875rem; }
@@ -512,13 +514,17 @@ body.app-nav-open .admin-sidebar {
 .pr-4 { padding-right: 1rem; }
 .pb-3 { padding-bottom: 0.75rem; }
 .border-slate-200 { border-color: #e2e8f0; }
+.border-emerald-200 { border-color: #a7f3d0; }
+.border-rose-200 { border-color: #fecdd3; }
 .border-white\/15 { border-color: rgba(255, 255, 255, 0.15); }
 .bg-slate-100 { background: #f1f5f9; }
 .bg-slate-800 { background: #1e293b; }
 .bg-white\/10 { background: rgba(255, 255, 255, 0.1); }
 .bg-white\/95 { background: rgba(255, 255, 255, 0.95); }
+.bg-emerald-50 { background: #ecfdf5; }
 .bg-emerald-100 { background: #d1fae5; }
 .bg-amber-100 { background: #fef3c7; }
+.bg-rose-50 { background: #fff1f2; }
 .bg-rose-100 { background: #ffe4e6; }
 .dark .dark\:border-slate-700 { border-color: #334155; }
 .dark .dark\:text-slate-400 { color: #94a3b8; }
@@ -526,10 +532,12 @@ body.app-nav-open .admin-sidebar {
 .dark .dark\:bg-slate-800 { background: #1e293b; }
 .dark .dark\:bg-emerald-500\/10 { background: rgba(16, 185, 129, 0.1); }
 .dark .dark\:text-emerald-300 { color: #6ee7b7; }
+.dark .dark\:text-emerald-100 { color: #d1fae5; }
 .dark .dark\:bg-amber-500\/10 { background: rgba(245, 158, 11, 0.1); }
 .dark .dark\:text-amber-300 { color: #fcd34d; }
 .dark .dark\:bg-rose-500\/10 { background: rgba(244, 63, 94, 0.1); }
 .dark .dark\:text-rose-300 { color: #fda4af; }
+.dark .dark\:text-rose-100 { color: #ffe4e6; }
 .bg-gradient-to-br {
     background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
 }
@@ -1045,6 +1053,15 @@ body.app-nav-open .admin-sidebar {
     gap: 0.75rem;
     align-items: center;
     justify-content: flex-start;
+}
+
+.certificate-preview-frame {
+    display: block;
+    width: 100%;
+    min-height: 70vh;
+    border: 1px solid var(--border-default);
+    border-radius: 1.25rem;
+    background: #fff;
 }
 
 .modal-backdrop {

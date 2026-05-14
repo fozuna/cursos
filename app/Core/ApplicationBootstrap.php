@@ -104,6 +104,11 @@ final class ApplicationBootstrap
                 && self::columnExists($pdo, 'students', 'phone')
                 && self::columnExists($pdo, 'students', 'cpf')
                 && self::columnExists($pdo, 'students', 'deleted_at'),
+            '004_add_public_certificate_access.sql' => self::tablesExist($pdo, [
+                'public_certificate_access_tokens',
+                'public_certificate_rate_limits',
+                'public_certificate_access_logs',
+            ]),
             default => false,
         };
     }

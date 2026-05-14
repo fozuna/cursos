@@ -11,6 +11,7 @@ O formato adotado e inspirado em Keep a Changelog, com linguagem objetiva e orie
 - Politica formal de versionamento com commit e push obrigatorios apos cada conjunto de alteracoes concluido.
 - Fluxo padronizado para mudancas de schema com criacao de migration, teste local, verificacao de rollback e atualizacao de documentacao.
 - Documento operacional em `docs/versionamento-e-migrations.md`.
+- Pagina publica de download de certificados por celular com token temporario individual de 7 dias, preview em PDF, download protegido, CSRF, rate limiting por IP e auditoria de acessos.
 
 ### Changed
 

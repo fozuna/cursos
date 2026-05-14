@@ -63,4 +63,41 @@ final class Request
     {
         return $this->files[$key] ?? null;
     }
+
+    public function ip(): string
+    {
+        $forwardedFor = trim((string) ($this->server['HTTP_X_FORWARDED_FOR'] ?? ''));
+
+        if ($forwardedFor !== '') {
+            $parts = array_map('trim', explode(',', $forwardedFor));
+
+            if ($parts !== [] && filter_var($parts[0], FILTER_VALIDATE_IP)) {
+                return $parts[0];
+            }
+        }
+
+        $remoteAddr = trim((string) ($this->server['REMOTE_ADDR'] ?? ''));
+
+        return filter_var($remoteAddr, FILTER_VALIDATE_IP) ? $remoteAddr : '0.0.0.0';
+    }
+
+    public function userAgent(): ?string
+    {
+        $userAgent = trim((string) ($this->server['HTTP_USER_AGENT'] ?? ''));
+
+        return $userAgent !== '' ? substr($userAgent, 0, 255) : null;
+    }
+
+    public function isSecure(): bool
+    {
+        $https = strtolower((string) ($this->server['HTTPS'] ?? ''));
+        $forwardedProto = strtolower((string) ($this->server['HTTP_X_FORWARDED_PROTO'] ?? ''));
+        $forwardedSsl = strtolower((string) ($this->server['HTTP_X_FORWARDED_SSL'] ?? ''));
+        $serverPort = (string) ($this->server['SERVER_PORT'] ?? '');
+
+        return in_array($https, ['on', '1'], true)
+            || $forwardedProto === 'https'
+            || $forwardedSsl === 'on'
+            || $serverPort === '443';
+    }
 }

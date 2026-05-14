@@ -117,6 +117,14 @@ Guia operacional completo:
 - O sistema valida o volume total de texto para evitar estouro do verso do certificado.
 - Em caso de excesso de texto, resuma as secoes antes de gerar o lote.
 
+## Download Publico do Certificado
+
+- O painel administrativo agora permite gerar um link individual por certificado em `Certificados > Gerar link aluno`.
+- O link publico expira em 7 dias e exige a confirmacao do celular do aluno no formato brasileiro `(XX) 9XXXX-XXXX`.
+- O acesso so e liberado quando o token esta valido, o telefone corresponde ao aluno do certificado e o PDF ja existe no storage.
+- O fluxo inclui protecao CSRF, limitacao de taxa por IP com bloqueio temporario apos 5 tentativas invalidas em 15 minutos e log de preview/download para auditoria.
+- Em producao, configure `APP_URL` com `https://` para manter todas as requisicoes publicas em conexao segura.
+
 ### Testes
 
 ```bash
@@ -131,3 +139,4 @@ Os testes cobrem:
 - validacao unitaria de cadastro de alunos
 - renderizacao integrada da frente e do verso do certificado
 - cenarios com conteudo enxuto e conteudo detalhado
+- emissao de link publico com validacao por celular e bloqueio por excesso de tentativas invalidas

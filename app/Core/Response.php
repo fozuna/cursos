@@ -35,4 +35,17 @@ final class Response
         readfile($filePath);
         exit;
     }
+
+    public static function inlinePdf(string $filePath, string $displayName): never
+    {
+        if (!file_exists($filePath)) {
+            self::html('Arquivo nao encontrado.', 404);
+        }
+
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: inline; filename="' . basename($displayName) . '"');
+        header('Content-Length: ' . (string) filesize($filePath));
+        readfile($filePath);
+        exit;
+    }
 }

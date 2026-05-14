@@ -130,7 +130,10 @@ $pageHeaderActions = '<a href="' . e(url('/validar')) . '" class="action-button"
                                 </td>
                                 <td>
                                     <?php if (!empty($certificate['pdf_path'])): ?>
-                                        <a href="<?= e(url('/download/' . basename((string) $certificate['pdf_path']))) ?>" class="action-button">Download PDF</a>
+                                        <div class="inline-toolbar">
+                                            <a href="<?= e(url('/download/' . basename((string) $certificate['pdf_path']))) ?>" class="action-button">Download PDF</a>
+                                            <a href="<?= e(url('/certificados-publicos/compartilhar/' . (int) $certificate['id'])) ?>" class="action-button">Gerar link aluno</a>
+                                        </div>
                                     <?php else: ?>
                                         <span class="data-table__meta">Arquivo em processamento</span>
                                     <?php endif; ?>
