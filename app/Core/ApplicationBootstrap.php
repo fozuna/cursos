@@ -109,6 +109,7 @@ final class ApplicationBootstrap
                 'public_certificate_rate_limits',
                 'public_certificate_access_logs',
             ]),
+            '005_add_certificate_issue_registry.sql' => self::tableExists($pdo, 'certificate_issue_registry'),
             default => false,
         };
     }

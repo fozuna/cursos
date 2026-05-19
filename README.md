@@ -125,6 +125,14 @@ Guia operacional completo:
 - O fluxo inclui protecao CSRF, limitacao de taxa por IP com bloqueio temporario apos 5 tentativas invalidas em 15 minutos e log de preview/download para auditoria.
 - Em producao, configure `APP_URL` com `https://` para manter todas as requisicoes publicas em conexao segura.
 
+## Controle de Reemissao
+
+- Cada tentativa de emissao em lote agora calcula uma identidade unica por certificado com base no aluno, curso, data de conclusao e carga horaria.
+- O sistema consulta um registro persistente indexado em `certificate_issue_registry` para bloquear automaticamente certificados ja emitidos com sucesso em lotes anteriores.
+- O operador responsavel informa o campo `Solicitado por` antes da geracao; esse identificador fica associado ao lote e a cada item processado para auditoria.
+- Ao final de cada lote, a tela administrativa exibe um relatorio com itens gerados, bloqueados por reemissao e falhas encontradas no processamento.
+- Bloqueios, sucessos e erros tambem sao registrados em `generation_histories` e no log estruturado da aplicacao.
+
 ### Testes
 
 ```bash
@@ -140,3 +148,4 @@ Os testes cobrem:
 - renderizacao integrada da frente e do verso do certificado
 - cenarios com conteudo enxuto e conteudo detalhado
 - emissao de link publico com validacao por celular e bloqueio por excesso de tentativas invalidas
+- identificacao de certificado ja emitido, bloqueio de lote completo repetido e processamento de lote parcial sem reemitir itens antigos

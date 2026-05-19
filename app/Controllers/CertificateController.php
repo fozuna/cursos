@@ -46,6 +46,7 @@ final class CertificateController extends Controller
 
         $flash = $_SESSION['flash'] ?? null;
         unset($_SESSION['flash']);
+        $lastRequestedBy = $_SESSION['last_requested_by'] ?? 'Operador do painel';
 
         $section = (string) $request->input('secao', 'gerar');
         $activeSubNav = $section === 'lista' ? 'list' : 'generate';
@@ -58,6 +59,7 @@ final class CertificateController extends Controller
             'latestCertificates' => $this->certificateRepository->latestByCompany((int) $company['id'], 24),
             'nextCertificateCode' => $this->certificateCodeService->nextAvailableCode(),
             'activeSubNav' => $activeSubNav,
+            'lastRequestedBy' => (string) $lastRequestedBy,
         ]);
     }
 
@@ -74,12 +76,17 @@ final class CertificateController extends Controller
 
             $templateId = (int) $request->input('template_id', 0) ?: null;
             $mode = (string) $request->input('input_mode', 'manual');
+            $requestedBy = trim((string) $request->input('requested_by', ''));
+            $requestedBy = $requestedBy !== '' ? $requestedBy : 'Operador do painel';
+            $_SESSION['last_requested_by'] = $requestedBy;
 
             Logger::info('certificates.generate.request', [
                 'mode' => $mode,
                 'template_id' => $templateId,
                 'request_method' => $request->method(),
                 'request_path' => $request->path(),
+                'requested_by' => $requestedBy,
+                'requested_ip' => method_exists($request, 'ip') ? $request->ip() : null,
             ]);
 
             if ($mode === 'course') {
@@ -99,28 +106,43 @@ final class CertificateController extends Controller
                 $imported['source_file'],
                 (int) $company['id'],
                 $programContent,
-                $templateId
+                $templateId,
+                $requestedBy,
+                method_exists($request, 'ip') ? $request->ip() : null
             );
 
             $_SESSION['flash'] = [
-                'type' => $result['generated_count'] > 0 ? 'success' : 'error',
+                'type' => ($result['generated_count'] > 0 || ($result['blocked_count'] ?? 0) > 0) ? 'success' : 'error',
                 'message' => $result['generated_count'] > 0
                     ? sprintf(
                         '%d de %d certificados gerados com sucesso.',
                         $result['generated_count'],
                         $result['total_count']
                     )
-                    : ($result['failed_messages'][0] ?? 'Nenhum certificado foi gerado.'),
+                    : (($result['blocked_count'] ?? 0) > 0
+                        ? sprintf(
+                            'Nenhum certificado novo foi gerado. %d item(ns) do lote foram bloqueados por ja terem sido emitidos.',
+                            (int) ($result['blocked_count'] ?? 0)
+                        )
+                        : ($result['failed_messages'][0] ?? 'Nenhum certificado foi gerado.')),
                 'details' => sprintf(
-                    'Entrada: %s%s. Participantes processados: %d. Falhas: %d.',
+                    'Entrada: %s%s. Participantes processados: %d. Gerados: %d. Bloqueados: %d. Falhas: %d.',
                     strtoupper($imported['source_type']),
                     !empty($imported['original_name']) ? ' - ' . $imported['original_name'] : '',
                     (int) ($imported['row_count'] ?? count($preparedRows)),
+                    (int) ($result['generated_count'] ?? 0),
+                    (int) ($result['blocked_count'] ?? 0),
                     (int) ($result['failed_count'] ?? 0)
                 ),
                 'input_mode' => $mode,
                 'program_fields' => $request->all(),
                 'zip_file' => $result['zip_file'],
+                'report' => [
+                    'generated_items' => $result['generated_items'] ?? [],
+                    'blocked_items' => $result['blocked_items'] ?? [],
+                    'failed_messages' => $result['failed_messages'] ?? [],
+                    'requested_by' => $requestedBy,
+                ],
             ];
 
             Logger::info('certificates.generate.success', [
@@ -131,6 +153,8 @@ final class CertificateController extends Controller
                 'program_character_count' => $programContent['character_count'],
                 'program_estimated_lines' => $programContent['estimated_lines'],
                 'generated_count' => $result['generated_count'],
+                'blocked_count' => $result['blocked_count'] ?? 0,
+                'failed_count' => $result['failed_count'] ?? 0,
                 'batch_id' => $result['batch_id'],
                 'zip_file' => $result['zip_file'],
             ]);

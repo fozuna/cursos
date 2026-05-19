@@ -71,15 +71,91 @@ $pageHeaderActions = '<a href="' . e(url('/validar')) . '" class="action-button"
                     </select>
                     <small class="field-help">Somente cursos ativos com matriculas concluidas geram certificados automaticamente.</small>
                 </label>
-                <div class="summary-card">
-                    <p class="card-kicker">Fluxo</p>
-                    <h3 class="card-title">Emissao em lote</h3>
-                    <p class="card-subtitle">A rotina usa o conteudo programatico do curso, monta a validacao publica e gera os arquivos com padrao visual unificado.</p>
-                </div>
+                <label class="field-card">
+                    <span>Solicitado por</span>
+                    <input
+                        type="text"
+                        name="requested_by"
+                        value="<?= e((string) ($lastRequestedBy ?? 'Operador do painel')) ?>"
+                        class="field-input"
+                        maxlength="180"
+                        required
+                    >
+                    <small class="field-help">Identificador do operador responsavel pela emissao para auditoria e rastreabilidade do lote.</small>
+                </label>
             </div>
             <button type="submit" class="action-button action-button--primary">Gerar certificados do curso</button>
         </form>
     </section>
+
+    <?php if (!empty($flash['report'])): ?>
+        <section class="admin-card">
+            <div class="card-header">
+                <div>
+                    <p class="card-kicker">Relatorio do lote</p>
+                    <h2 class="card-title">Resultado detalhado da ultima emissao</h2>
+                    <p class="card-subtitle">Solicitado por <?= e((string) ($flash['report']['requested_by'] ?? 'Operador do painel')) ?>.</p>
+                </div>
+            </div>
+
+            <div class="public-grid">
+                <div class="surface-panel surface-panel--success">
+                    <p class="text-xs uppercase tracking-[0.25em] text-slate-400">Gerados</p>
+                    <p class="mt-3 text-xl font-semibold"><?= count($flash['report']['generated_items'] ?? []) ?></p>
+                </div>
+                <div class="surface-panel surface-panel--danger">
+                    <p class="text-xs uppercase tracking-[0.25em] text-slate-400">Bloqueados</p>
+                    <p class="mt-3 text-xl font-semibold"><?= count($flash['report']['blocked_items'] ?? []) ?></p>
+                </div>
+                <div class="surface-panel">
+                    <p class="text-xs uppercase tracking-[0.25em] text-slate-400">Falhas</p>
+                    <p class="mt-3 text-xl font-semibold"><?= count($flash['report']['failed_messages'] ?? []) ?></p>
+                </div>
+            </div>
+
+            <?php if (!empty($flash['report']['generated_items'])): ?>
+                <div class="mt-8">
+                    <h3 class="card-title">Emitidos com sucesso</h3>
+                    <div class="stack-list mt-4">
+                        <?php foreach ($flash['report']['generated_items'] as $item): ?>
+                            <article class="summary-card">
+                                <strong class="data-table__title"><?= e((string) ($item['name'] ?? 'Aluno')) ?></strong>
+                                <p class="data-table__meta">Codigo: <?= e((string) ($item['certificate_code'] ?? 'N/D')) ?></p>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <?php if (!empty($flash['report']['blocked_items'])): ?>
+                <div class="mt-8">
+                    <h3 class="card-title">Bloqueados por reemissao</h3>
+                    <div class="stack-list mt-4">
+                        <?php foreach ($flash['report']['blocked_items'] as $item): ?>
+                            <article class="summary-card">
+                                <strong class="data-table__title"><?= e((string) ($item['name'] ?? 'Aluno')) ?></strong>
+                                <p class="data-table__meta">Codigo: <?= e((string) ($item['certificate_code'] ?? 'N/D')) ?></p>
+                                <p class="data-table__meta"><?= e((string) ($item['reason'] ?? 'Ja emitido anteriormente.')) ?></p>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <?php if (!empty($flash['report']['failed_messages'])): ?>
+                <div class="mt-8">
+                    <h3 class="card-title">Falhas registradas</h3>
+                    <div class="stack-list mt-4">
+                        <?php foreach ($flash['report']['failed_messages'] as $message): ?>
+                            <article class="summary-card">
+                                <p class="data-table__meta"><?= e((string) $message) ?></p>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </section>
+    <?php endif; ?>
 
     <section id="lista-certificados" class="admin-card table-card">
         <div class="card-header">

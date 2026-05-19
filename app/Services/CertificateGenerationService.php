@@ -7,9 +7,11 @@ namespace App\Services;
 use App\Core\Database;
 use App\Repositories\BatchRepository;
 use App\Repositories\CertificateRepository;
+use App\Repositories\CertificateIssueRegistryRepository;
 use App\Repositories\HistoryRepository;
 use App\Repositories\StudentRepository;
 use App\Repositories\TemplateRepository;
+use App\Support\Logger;
 use PDOException;
 use Throwable;
 
@@ -18,11 +20,14 @@ final class CertificateGenerationService
     public function __construct(
         private readonly StudentRepository $studentRepository = new StudentRepository(),
         private readonly CertificateRepository $certificateRepository = new CertificateRepository(),
+        private readonly CertificateIssueRegistryRepository $certificateIssueRegistryRepository = new CertificateIssueRegistryRepository(),
         private readonly BatchRepository $batchRepository = new BatchRepository(),
         private readonly HistoryRepository $historyRepository = new HistoryRepository(),
         private readonly TemplateRepository $templateRepository = new TemplateRepository(),
         private readonly PdfGeneratorService $pdfGeneratorService = new PdfGeneratorService(),
-        private readonly QrCodeService $qrCodeService = new QrCodeService()
+        private readonly QrCodeService $qrCodeService = new QrCodeService(),
+        private readonly CertificateReissueGuardService $certificateReissueGuardService = new CertificateReissueGuardService(),
+        private readonly CertificateIssueIdentityService $certificateIssueIdentityService = new CertificateIssueIdentityService()
     ) {
     }
 
@@ -32,7 +37,9 @@ final class CertificateGenerationService
         ?string $sourceFile,
         int $companyId,
         array $programContent,
-        ?int $templateId = null
+        ?int $templateId = null,
+        string $requestedBy = 'painel-admin',
+        ?string $requestedIp = null
     ): array
     {
         $template = $templateId !== null
@@ -52,13 +59,78 @@ final class CertificateGenerationService
             'status' => 'processing',
         ]);
 
+        $guard = $this->certificateReissueGuardService->filterAlreadyIssued($companyId, $rows);
         $generated = [];
+        $blocked = [];
         $failures = [];
         $processed = 0;
 
-        foreach ($rows as $row) {
+        foreach ($guard['blocked_rows'] as $blockedRow) {
+            $row = $blockedRow['row'];
+            $blocked[] = [
+                'name' => (string) ($row['full_name'] ?? 'Aluno'),
+                'certificate_code' => (string) ($row['certificate_code'] ?? 'N/D'),
+                'reason' => (string) $blockedRow['reason'],
+            ];
+
+            Logger::warning('certificates.generate.blocked_duplicate', [
+                'company_id' => $companyId,
+                'batch_id' => $batchId,
+                'requested_by' => $requestedBy,
+                'requested_ip' => $requestedIp,
+                'full_name' => $row['full_name'] ?? null,
+                'certificate_code' => $row['certificate_code'] ?? null,
+                'issue_identifier' => $blockedRow['identifier'],
+                'reason' => $blockedRow['reason'],
+            ]);
+
+            $this->certificateIssueRegistryRepository->create([
+                'company_id' => $companyId,
+                'batch_id' => $batchId,
+                'certificate_id' => null,
+                'student_id' => isset($row['student_id']) ? (int) $row['student_id'] : null,
+                'issue_identifier' => $blockedRow['identifier'],
+                'certificate_code' => $row['certificate_code'] ?? null,
+                'full_name_snapshot' => (string) ($row['full_name'] ?? 'Aluno'),
+                'course_name' => (string) ($row['course_name'] ?? ''),
+                'completion_date' => (string) ($row['completion_date'] ?? date('Y-m-d')),
+                'workload_hours' => (int) ($row['workload_hours'] ?? 0),
+                'requested_by' => $requestedBy,
+                'requested_ip' => $requestedIp,
+                'emission_status' => 'blocked',
+                'blocked_reason' => (string) $blockedRow['reason'],
+                'payload_json' => json_encode(['row' => $row, 'existing' => $blockedRow['existing']], JSON_UNESCAPED_UNICODE),
+            ]);
+
+            $this->historyRepository->create([
+                'company_id' => $companyId,
+                'batch_id' => $batchId,
+                'certificate_id' => null,
+                'action' => 'certificate.blocked_duplicate',
+                'status' => 'warning',
+                'message' => sprintf('Reemissao bloqueada para %s. %s', (string) ($row['full_name'] ?? 'Aluno'), (string) $blockedRow['reason']),
+                'payload_json' => json_encode(['row' => $row, 'existing' => $blockedRow['existing']], JSON_UNESCAPED_UNICODE),
+            ]);
+        }
+
+        Logger::info('certificates.generate.duplicates_checked', [
+            'company_id' => $companyId,
+            'batch_id' => $batchId,
+            'total_rows' => count($rows),
+            'processable_rows' => count($guard['allowed_rows']),
+            'blocked_rows' => count($guard['blocked_rows']),
+            'requested_by' => $requestedBy,
+            'requested_ip' => $requestedIp,
+        ]);
+
+        if ($guard['allowed_rows'] === []) {
+            $this->batchRepository->updateProgress($batchId, count($blocked), 'completed');
+        }
+
+        foreach ($guard['allowed_rows'] as $row) {
             $processed++;
             $certificateId = null;
+            $issueIdentifier = $this->certificateIssueIdentityService->buildIdentifier($companyId, $row);
 
             try {
                 $db = Database::connection();
@@ -142,6 +214,23 @@ final class CertificateGenerationService
                     'certificate_code' => $row['certificate_code'],
                 ];
 
+                $this->certificateIssueRegistryRepository->create([
+                    'company_id' => $companyId,
+                    'batch_id' => $batchId,
+                    'certificate_id' => $certificateId,
+                    'student_id' => $studentId,
+                    'issue_identifier' => $issueIdentifier,
+                    'certificate_code' => $row['certificate_code'],
+                    'full_name_snapshot' => (string) $row['full_name'],
+                    'course_name' => (string) $row['course_name'],
+                    'completion_date' => (string) $row['completion_date'],
+                    'workload_hours' => (int) $row['workload_hours'],
+                    'requested_by' => $requestedBy,
+                    'requested_ip' => $requestedIp,
+                    'emission_status' => 'generated',
+                    'payload_json' => json_encode(['row' => $row], JSON_UNESCAPED_UNICODE),
+                ]);
+
                 $this->historyRepository->create([
                     'company_id' => $companyId,
                     'batch_id' => $batchId,
@@ -161,6 +250,24 @@ final class CertificateGenerationService
                     $this->certificateRepository->markFailed($certificateId);
                 }
 
+                $this->certificateIssueRegistryRepository->create([
+                    'company_id' => $companyId,
+                    'batch_id' => $batchId,
+                    'certificate_id' => $certificateId,
+                    'student_id' => isset($row['student_id']) ? (int) $row['student_id'] : null,
+                    'issue_identifier' => $issueIdentifier,
+                    'certificate_code' => $row['certificate_code'] ?? null,
+                    'full_name_snapshot' => (string) ($row['full_name'] ?? 'Aluno'),
+                    'course_name' => (string) ($row['course_name'] ?? ''),
+                    'completion_date' => (string) ($row['completion_date'] ?? date('Y-m-d')),
+                    'workload_hours' => (int) ($row['workload_hours'] ?? 0),
+                    'requested_by' => $requestedBy,
+                    'requested_ip' => $requestedIp,
+                    'emission_status' => 'failed',
+                    'blocked_reason' => $errorMessage,
+                    'payload_json' => json_encode(['row' => $row], JSON_UNESCAPED_UNICODE),
+                ]);
+
                 $this->historyRepository->create([
                     'company_id' => $companyId,
                     'batch_id' => $batchId,
@@ -172,10 +279,20 @@ final class CertificateGenerationService
                 ]);
 
                 $failures[] = $errorMessage;
+
+                Logger::error('certificates.generate.row_failed', [
+                    'company_id' => $companyId,
+                    'batch_id' => $batchId,
+                    'requested_by' => $requestedBy,
+                    'requested_ip' => $requestedIp,
+                    'certificate_code' => $row['certificate_code'] ?? null,
+                    'student_name' => $row['full_name'] ?? null,
+                    'error' => $errorMessage,
+                ]);
             }
 
-            $status = $processed >= count($rows) ? 'completed' : 'processing';
-            $this->batchRepository->updateProgress($batchId, $processed, $status);
+            $status = $processed >= count($guard['allowed_rows']) ? 'completed' : 'processing';
+            $this->batchRepository->updateProgress($batchId, $processed + count($blocked), $status);
         }
 
         $zipFile = (new ZipExportService($this->certificateRepository))->exportBatch($batchId);
@@ -185,8 +302,11 @@ final class CertificateGenerationService
             'generated_count' => count($generated),
             'total_count' => count($rows),
             'files' => $generated,
+            'blocked_count' => count($blocked),
+            'blocked_items' => $blocked,
             'failed_count' => count($failures),
             'failed_messages' => $failures,
+            'generated_items' => $generated,
             'zip_file' => $zipFile,
         ];
     }
