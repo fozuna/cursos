@@ -42,7 +42,7 @@ if ($programSections === [] && !empty($certificate['program_content'])) {
         * { box-sizing: border-box; }
         body {
             margin: 0;
-            font-family: DejaVu Sans, Arial, sans-serif;
+            font-family: <?= e($pdf['default_font']) ?>;
             color: #0f172a;
             background: #eef2f7;
         }
